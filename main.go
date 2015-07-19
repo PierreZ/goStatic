@@ -1,3 +1,6 @@
+// This small program is just a small web server created in static mode
+// in order to provide the smallest docker image possible
+
 package main // import "github.com/PierreZ/goStatic"
 
 import (
@@ -23,7 +26,7 @@ import (
 )
 
 var (
-	// Def & parsing of flags
+	// Def of flags
 	portPtr = flag.Int("p", 8043, "The listening port")
 	pathPtr = flag.String("static", "/srv/http", "The path for the static files")
 	crtPtr  = flag.String("crt", "/etc/ssl/server", "Folder for server.pem and key.pem")
