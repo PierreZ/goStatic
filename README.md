@@ -1,8 +1,6 @@
 # goStatic
 A really small static web server for Docker
 
-![DockerHub](http://dockeri.co/image/pierrezemb/gostatic)
-
 [![](https://badge.imagelayers.io/pierrezemb/gostatic:latest.svg)](https://imagelayers.io/?images=pierrezemb/gostatic:latest 'Get your own badge on imagelayers.io')
 [![GoDoc](https://godoc.org/github.com/PierreZ/goStatic?status.svg)](https://godoc.org/github.com/PierreZ/goStatic)
 
