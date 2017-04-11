@@ -27,7 +27,7 @@ Many links should provide you with additionnal info to see my point of view:
  * [Over 30% of Official Images in Docker Hub Contain High Priority Security Vulnerabilities](http://www.banyanops.com/blog/analyzing-docker-hub/)
  * [Create The Smallest Possible Docker Container](http://blog.xebia.com/2014/07/04/create-the-smallest-possible-docker-container/)
  * [Building Docker Images for Static Go Binaries](https://medium.com/@kelseyhightower/optimizing-docker-images-for-static-binaries-b5696e26eb07)
- * [Small Docker Images For Go Apps](http://www.centurylinklabs.com/small-docker-images-for-go-apps/)
+ * [Small Docker Images For Go Apps](https://www.ctl.io/developers/blog/post/small-docker-images-for-go-apps)
 
 ### How to use
 ```
