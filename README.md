@@ -1,17 +1,20 @@
 # goStatic
 A really small static web server for Docker
 
-[![](https://badge.imagelayers.io/pierrezemb/gostatic:latest.svg)](https://imagelayers.io/?images=pierrezemb/gostatic:latest 'Get your own badge on imagelayers.io')
 [![GoDoc](https://godoc.org/github.com/PierreZ/goStatic?status.svg)](https://godoc.org/github.com/PierreZ/goStatic)
 
 ### The goal
 My goal is to create to smallest docker container for my web static files. The advantage of Go is that you can generate a fully static binary, so that you don't need anything else.
 
+### Wait, I've been using old versions of GoStatic and things have changed!
+
+Yeah, decided to drop support of unsecured HTTPS. Two-years ago, when I started GoStatic, there was no automatic HTTPS available. Nowadays, thanks to Let's Encrypt, it's really easy to do so. If you need HTTPS, I recommend [caddy](https://caddyserver.com).
+
 ### Features
- * A fully static web server in 5MB
+ * A fully static web server in 6MB
+ * No frameworkw
  * Web server build for Docker
- * HTTPS by default
- * Can generate certificate on his onw
+ * Can generate certificate on his own
  * Light container
  * More security than official images (see below)
  * Log enabled
@@ -31,20 +34,22 @@ Many links should provide you with additionnal info to see my point of view:
 
 ### How to use
 ```
-// HTTPS server
-docker run -d -p 443:8043 -v path/to/website:/srv/http --name goStatic pierrezemb/gostatic
-// HTTP server
-docker run -d -p 80:8043 -v path/to/website:/srv/http --name goStatic pierrezemb/gostatic --forceHTTP
+docker run -d -p 80:8043 -v path/to/website:/srv/http --name goStatic pierrezemb/gostatic
 ```
 
 ### Wow, such container! What are you using?
 
-I'm using [echo](http://echo.labstack.com/) as a  micro web framework because he has great performance, and [golang-builder](https://github.com/CenturyLinkLabs/golang-builder) to generate the static binary (command line in the makefile)
-
-I'm also using the centurylink/ca-certs image instead of the scratch image to avoid this error:
+I'm using the centurylink/ca-certs image instead of the scratch image to avoid this error:
 
 ```
 x509: failed to load system roots and no roots provided
 ```
 
 The centurylink/ca-certs image is simply the scratch image with the most common root CA certificates pre-installed. The resulting image is only 258 kB which is still a good starting point for creating your own minimal images.
+
+### How to build 
+
+```bash
+GOARCH=amd64 GOOS=linux go build  -ldflags "-linkmode external -extldflags -static -w"
+```
+
