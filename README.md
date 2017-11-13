@@ -37,6 +37,29 @@ Many links should provide you with additionnal info to see my point of view:
 docker run -d -p 80:8043 -v path/to/website:/srv/http --name goStatic pierrezemb/gostatic
 ```
 
+### Usage 
+
+```
+./goStatic --help
+Usage of ./goStatic:
+  -append-header HeaderName:Value
+        HTTP response header, specified as HeaderName:Value that should be added to all responses.
+  -default-user-basic-auth string
+        Define the user (default "gopher")
+  -enable-basic-auth
+        Enable basic auth. By default, password are randomly generated. Use --set-basic-auth to set it.
+  -password-length int
+        Size of the randomized password (default 16)
+  -path string
+        The path for the static files (default "/srv/http")
+  -port int
+        The listening port (default 8043)
+  -set-basic-auth string
+        Define the basic auth. Form must be user:password
+```
+
+
+
 ### Wow, such container! What are you using?
 
 I'm using the centurylink/ca-certs image instead of the scratch image to avoid this error:

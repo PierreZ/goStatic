@@ -13,9 +13,16 @@ import (
 
 var (
 	// Def of flags
-	portPtr    = flag.Int("p", 8043, "The listening port")
-	path       = flag.String("static", "/srv/http", "The path for the static files")
-	headerFlag = flag.String("appendHeader", "", "HTTP response header, specified as `HeaderName:Value` that should be added to all responses.")
+	portPtr                  = flag.Int("port", 8043, "The listening port")
+	path                     = flag.String("path", "/srv/http", "The path for the static files")
+	headerFlag               = flag.String("append-header", "", "HTTP response header, specified as `HeaderName:Value` that should be added to all responses.")
+	basicAuth                = flag.Bool("enable-basic-auth", false, "Enable basic auth. By default, password are randomly generated. Use --set-basic-auth to set it.")
+	setBasicAuth             = flag.String("set-basic-auth", "", "Define the basic auth. Form must be user:password")
+	defaultUsernameBasicAuth = flag.String("default-user-basic-auth", "gopher", "Define the user")
+	sizeRandom               = flag.Int("password-length", 16, "Size of the randomized password")
+
+	username string
+	password string
 )
 
 func parseHeaderFlag(headerFlag string) (string, string) {
@@ -33,9 +40,23 @@ func main() {
 
 	flag.Parse()
 
+	// sanity check
+	if len(*setBasicAuth) != 0 && !*basicAuth {
+		*basicAuth = true
+	}
+
 	port := ":" + strconv.FormatInt(int64(*portPtr), 10)
 
 	handler := http.FileServer(http.Dir(*path))
+
+	if *basicAuth {
+		if len(*setBasicAuth) != 0 {
+			parseAuth(*setBasicAuth)
+		} else {
+			generateRandomAuth()
+		}
+		handler = authMiddleware(handler)
+	}
 
 	// Extra headers.
 	if len(*headerFlag) > 0 {
