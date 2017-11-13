@@ -43,7 +43,7 @@ func parseAuth(auth string) {
 }
 
 func generateRandomAuth() {
-	username = "gopher"
+	username = *defaultUsernameBasicAuth
 	password = generateRandomString()
 	log.Printf("User generated for basic auth. User:'%v', password:'%v'\n", username, password)
 }
