@@ -13,6 +13,8 @@ import (
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
+		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+
 		auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 
 		if len(auth) != 2 || auth[0] != "Basic" {

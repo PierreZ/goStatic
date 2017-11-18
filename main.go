@@ -50,6 +50,7 @@ func main() {
 	handler := http.FileServer(http.Dir(*path))
 
 	if *basicAuth {
+		log.Println("Enabling Basic Auth")
 		if len(*setBasicAuth) != 0 {
 			parseAuth(*setBasicAuth)
 		} else {
