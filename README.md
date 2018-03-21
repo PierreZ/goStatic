@@ -41,9 +41,11 @@ docker run -d -p 80:8043 -v path/to/website:/srv/http --name goStatic pierrezemb
 
 ```
 ./goStatic --help
-Usage of ./goStatic:
+Usage of /goStatic:
   -append-header HeaderName:Value
         HTTP response header, specified as HeaderName:Value that should be added to all responses.
+  -context string
+        The 'context' path on which files are served, e.g. 'doc' will serve the files at 'http://localhost:<port>/doc/'
   -default-user-basic-auth string
         Define the user (default "gopher")
   -enable-basic-auth
