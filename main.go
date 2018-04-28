@@ -14,6 +14,7 @@ import (
 var (
 	// Def of flags
 	portPtr                  = flag.Int("port", 8043, "The listening port")
+	context                  = flag.String("context", "", "The 'context' path on which files are served, e.g. 'doc' will serve the files at 'http://localhost:<port>/doc/'")
 	path                     = flag.String("path", "/srv/http", "The path for the static files")
 	headerFlag               = flag.String("append-header", "", "HTTP response header, specified as `HeaderName:Value` that should be added to all responses.")
 	basicAuth                = flag.Bool("enable-basic-auth", false, "Enable basic auth. By default, password are randomly generated. Use --set-basic-auth to set it.")
@@ -46,8 +47,14 @@ func main() {
 	}
 
 	port := ":" + strconv.FormatInt(int64(*portPtr), 10)
-
+	
 	handler := http.FileServer(http.Dir(*path))
+	
+	pathPrefix := "/";
+	if len(*context) > 0 {
+		pathPrefix = "/"+*context+"/"
+		handler = http.StripPrefix(pathPrefix, handler)
+	}
 
 	if *basicAuth {
 		log.Println("Enabling Basic Auth")
@@ -73,8 +80,8 @@ func main() {
 		}
 	}
 
-	http.Handle("/", handler)
+	http.Handle(pathPrefix, handler)
 
-	log.Printf("Listening at 0.0.0.0%v...", port)
+	log.Printf("Listening at 0.0.0.0%v %v...", port, pathPrefix)
 	log.Fatalln(http.ListenAndServe(port, nil))
 }
