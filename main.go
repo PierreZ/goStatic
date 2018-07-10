@@ -16,6 +16,7 @@ var (
 	portPtr                  = flag.Int("port", 8043, "The listening port")
 	context                  = flag.String("context", "", "The 'context' path on which files are served, e.g. 'doc' will serve the files at 'http://localhost:<port>/doc/'")
 	path                     = flag.String("path", "/srv/http", "The path for the static files")
+	fallbackPath             = flag.String("fallback", "", "Default relative to be used when no file requested found. E.g. /index.html")
 	headerFlag               = flag.String("append-header", "", "HTTP response header, specified as `HeaderName:Value` that should be added to all responses.")
 	basicAuth                = flag.Bool("enable-basic-auth", false, "Enable basic auth. By default, password are randomly generated. Use --set-basic-auth to set it.")
 	setBasicAuth             = flag.String("set-basic-auth", "", "Define the basic auth. Form must be user:password")
@@ -47,12 +48,21 @@ func main() {
 	}
 
 	port := ":" + strconv.FormatInt(int64(*portPtr), 10)
-	
-	handler := http.FileServer(http.Dir(*path))
-	
-	pathPrefix := "/";
+
+	var fileSystem http.FileSystem = http.Dir(*path)
+
+	if *fallbackPath != "" {
+		fileSystem = fallback{
+			defaultPath: *fallbackPath,
+			fs:          fileSystem,
+		}
+	}
+
+	handler := http.FileServer(fileSystem)
+
+	pathPrefix := "/"
 	if len(*context) > 0 {
-		pathPrefix = "/"+*context+"/"
+		pathPrefix = "/" + *context + "/"
 		handler = http.StripPrefix(pathPrefix, handler)
 	}
 
