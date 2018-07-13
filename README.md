@@ -50,6 +50,8 @@ Usage of /goStatic:
         Define the user (default "gopher")
   -enable-basic-auth
         Enable basic auth. By default, password are randomly generated. Use --set-basic-auth to set it.
+  -fallback string
+    	Default relative to be used when no file requested found. E.g. /index.html
   -password-length int
         Size of the randomized password (default 16)
   -path string
