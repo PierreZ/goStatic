@@ -1,8 +1,6 @@
 # goStatic [![Docker Pulls](https://img.shields.io/docker/pulls/pierrezemb/gostatic.svg?style=plastic)](https://hub.docker.com/r/pierrezemb/gostatic/) [![Docker Build](https://img.shields.io/docker/build/pierrezemb/gostatic.svg?style=plastic)](https://hub.docker.com/r/pierrezemb/gostatic/) [![Build Status](https://travis-ci.org/PierreZ/goStatic.svg?branch=master)](https://travis-ci.org/PierreZ/goStatic)  [![GoDoc](https://godoc.org/github.com/PierreZ/goStatic?status.svg)](https://godoc.org/github.com/PierreZ/goStatic)
 A really small static web server for Docker
 
-
-
 ### The goal
 My goal is to create to smallest docker container for my web static files. The advantage of Go is that you can generate a fully static binary, so that you don't need anything else.
 
@@ -61,13 +59,3 @@ Usage of /goStatic:
   -set-basic-auth string
         Define the basic auth. Form must be user:password
 ```
-
-### Wow, such container! What are you using?
-
-I'm using the centurylink/ca-certs image instead of the scratch image to avoid this error:
-
-```
-x509: failed to load system roots and no roots provided
-```
-
-The centurylink/ca-certs image is simply the scratch image with the most common root CA certificates pre-installed. The resulting image is only 258 kB which is still a good starting point for creating your own minimal images.
