@@ -49,7 +49,7 @@ Usage of /goStatic:
   -enable-basic-auth
         Enable basic auth. By default, password are randomly generated. Use --set-basic-auth to set it.
   -fallback string
-    	Default relative to be used when no file requested found. E.g. /index.html
+        Default fallback file. Either absolute for a specific asset (/index.html), or relative to recursively resolve (index.html).
   -password-length int
         Size of the randomized password (default 16)
   -path string
@@ -59,3 +59,12 @@ Usage of /goStatic:
   -set-basic-auth string
         Define the basic auth. Form must be user:password
 ```
+
+#### Fallback
+
+The fallback option is principally useful for single page applications (SPAs) where the browser may request a file, but where part of the path is in fact an internal route in the application, not a file on disk. goStatic supports two possible usages of this option:
+
+1. Using an absolute path so that all not found requests resolve to the same file
+2. Using a relative file, which searches up the tree for the specified file
+
+The second case is useful if you have multiple SPAs within the one filesystem. e.g., */* and */admin*.
