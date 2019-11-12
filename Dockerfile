@@ -5,8 +5,9 @@ COPY . .
 RUN mkdir ./bin && \
     CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -tags netgo -installsuffix netgo -o ./bin/goStatic && \
     mkdir ./bin/etc && \
-    cp ./passwd ./bin/etc && \
-    cp ./group ./bin/etc
+    UI=$(( ( RANDOM % 9999 )  + 99 )) && \
+    echo "appuser:x:$ID:$ID::/sbin/nologin:/bin/false" > ./bin/etc/passwd && \
+    echo "appgroup:x:$ID:appuser" > ./bin/etc/group
 
 # stage 1
 FROM scratch
