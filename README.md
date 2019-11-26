@@ -48,6 +48,8 @@ Usage of /goStatic:
         Define the user (default "gopher")
   -enable-basic-auth
         Enable basic auth. By default, password are randomly generated. Use --set-basic-auth to set it.
+  -enable-health
+        Enable health check endpoint. You can call /health to get a 200 response. Useful for Kubernetes, OpenFaas, etc.
   -fallback string
         Default fallback file. Either absolute for a specific asset (/index.html), or relative to recursively resolve (index.html).
   -password-length int
