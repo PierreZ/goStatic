@@ -4,12 +4,16 @@
 package main
 
 import (
+	"compress/gzip"
 	"flag"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 var (
@@ -38,6 +42,27 @@ func parseHeaderFlag(headerFlag string) (string, string) {
 		return pieces[0], ""
 	}
 	return pieces[0], pieces[1]
+}
+
+var gzPool = sync.Pool{
+	New: func() interface{} {
+		w := gzip.NewWriter(ioutil.Discard)
+		return w
+	},
+}
+
+type gzipResponseWriter struct {
+	io.Writer
+	http.ResponseWriter
+}
+
+func (w *gzipResponseWriter) WriteHeader(status int) {
+	w.Header().Del("Content-Length")
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func (w *gzipResponseWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
 }
 
 func main() {
@@ -85,7 +110,18 @@ func main() {
 			fileServer := handler
 			handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set(header, headerValue)
-				fileServer.ServeHTTP(w, r)
+				if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+					fileServer.ServeHTTP(w, r)
+				} else {
+					w.Header().Set("Content-Encoding", "gzip")
+					gz := gzPool.Get().(*gzip.Writer)
+					defer gzPool.Put(gz)
+
+					gz.Reset(w)
+					defer gz.Close()
+					fileServer.ServeHTTP(&gzipResponseWriter{ResponseWriter: w, Writer: gz}, r)
+				}
+
 			})
 		} else {
 			log.Println("appendHeader misconfigured; ignoring.")
