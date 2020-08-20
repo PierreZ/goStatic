@@ -10,11 +10,11 @@ Yeah, decided to drop support of unsecured HTTPS. Two-years ago, when I started 
 
 ### Features
  * A fully static web server in 6MB
- * No frameworkw
- * Web server build for Docker
- * Can generate certificate on his own
+ * No framework
+ * Web server built for Docker
+ * Can generate certificate on its own
  * Light container
- * More security than official images (see below)
+ * More secure than official images (see below)
  * Log enabled
 
 ### Why?
