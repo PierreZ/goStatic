@@ -28,6 +28,7 @@ var (
 	setBasicAuth             = flag.String("set-basic-auth", "", "Define the basic auth. Form must be user:password")
 	defaultUsernameBasicAuth = flag.String("default-user-basic-auth", "gopher", "Define the user")
 	sizeRandom               = flag.Int("password-length", 16, "Size of the randomized password")
+	logRequest               = flag.Bool("enable-logging", false, "Enable log request")
 
 	username string
 	password string
@@ -65,6 +66,15 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
+func handleReq(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if *logRequest {
+			log.Println(r.Method, r.URL.Path)
+		}
+		h.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 
 	flag.Parse()
@@ -85,7 +95,7 @@ func main() {
 		}
 	}
 
-	handler := http.FileServer(fileSystem)
+	handler := handleReq(http.FileServer(fileSystem))
 
 	pathPrefix := "/"
 	if len(*context) > 0 {
