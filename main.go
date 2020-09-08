@@ -29,6 +29,7 @@ var (
 	defaultUsernameBasicAuth = flag.String("default-user-basic-auth", "gopher", "Define the user")
 	sizeRandom               = flag.Int("password-length", 16, "Size of the randomized password")
 	logRequest               = flag.Bool("enable-logging", false, "Enable log request")
+	httpsPromote             = flag.Bool("https-promote", false, "All HTTP requests should be redirected to HTTPS")
 
 	username string
 	password string
@@ -68,6 +69,13 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 
 func handleReq(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-Forwarded-Proto") == "http" {
+			http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
+			if *logRequest {
+				log.Println(301, r.Method, r.URL.Path)
+			}
+			return
+		}
 		if *logRequest {
 			log.Println(r.Method, r.URL.Path)
 		}

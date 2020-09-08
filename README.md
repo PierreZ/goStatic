@@ -60,6 +60,10 @@ Usage of /goStatic:
         The listening port (default 8043)
   -set-basic-auth string
         Define the basic auth. Form must be user:password
+  -https-promote
+        Connections to http: are redirected to https:
+  -enable-logging
+        Writes a simple log entry for requests to the server
 ```
 
 #### Fallback
