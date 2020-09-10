@@ -18,7 +18,7 @@ Yeah, decided to drop support of unsecured HTTPS. Two-years ago, when I started 
  * Log enabled
 
 ### Why?
-Because the official Golang image is wayyyy too big (around 1/2Gb as you can see below) and could be unsecure.
+Because the official Golang image is wayyyy too big (around 1/2Gb as you can see below) and could be insecure.
 
 [![](https://badge.imagelayers.io/golang:latest.svg)](https://imagelayers.io/?images=golang:latest 'Get your own badge on imagelayers.io')
 
