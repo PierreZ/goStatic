@@ -69,7 +69,7 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 
 func handleReq(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("X-Forwarded-Proto") == "http" {
+		if *httpsPromote && r.Header.Get("X-Forwarded-Proto") == "http" {
 			http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
 			if *logRequest {
 				log.Println(301, r.Method, r.URL.Path)
