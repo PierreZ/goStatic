@@ -76,6 +76,7 @@ func handleReq(h http.Handler) http.Handler {
 			}
 			return
 		}
+
 		if *logRequest {
 			log.Println(r.Method, r.URL.Path)
 		}
