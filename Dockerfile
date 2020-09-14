@@ -15,5 +15,5 @@ FROM scratch
 WORKDIR /
 COPY --from=builder /go/src/github.com/PierreZ/goStatic/bin/ .
 USER appuser
-ENTRYPOINT ["/goStatic","-enable-logging","-https-promote"]
+ENTRYPOINT ["/goStatic"]
  
