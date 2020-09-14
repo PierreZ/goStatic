@@ -12,18 +12,18 @@ Yeah, decided to drop support of unsecured HTTPS. Two-years ago, when I started 
  * A fully static web server in 6MB
  * No framework
  * Web server built for Docker
- * Can generate certificate on its own
+ * Can generate the certificate on its own
  * Light container
  * More secure than official images (see below)
  * Log enabled
 
 ### Why?
-Because the official Golang image is wayyyy too big (around 1/2Gb as you can see below) and could be unsecure.
+Because the official Golang image is wayyyy too big (around 1/2Gb as you can see below) and could be insecure.
 
 [![](https://badge.imagelayers.io/golang:latest.svg)](https://imagelayers.io/?images=golang:latest 'Get your own badge on imagelayers.io')
 
 For me, the whole point of containers is to have a light container...
-Many links should provide you with additionnal info to see my point of view:
+Many links should provide you with additional info to see my point of view:
 
  * [Over 30% of Official Images in Docker Hub Contain High Priority Security Vulnerabilities](http://www.banyanops.com/blog/analyzing-docker-hub/)
  * [Create The Smallest Possible Docker Container](http://blog.xebia.com/2014/07/04/create-the-smallest-possible-docker-container/)
@@ -60,11 +60,15 @@ Usage of /goStatic:
         The listening port (default 8043)
   -set-basic-auth string
         Define the basic auth. Form must be user:password
+  -https-promote
+        Connections to http: are redirected to https:
+  -enable-logging
+        Writes a simple log entry for requests to the server
 ```
 
 #### Fallback
 
-The fallback option is principally useful for single page applications (SPAs) where the browser may request a file, but where part of the path is in fact an internal route in the application, not a file on disk. goStatic supports two possible usages of this option:
+The fallback option is principally useful for single-page applications (SPAs) where the browser may request a file, but where part of the path is in fact an internal route in the application, not a file on disk. goStatic supports two possible usages of this option:
 
 1. Using an absolute path so that all not found requests resolve to the same file
 2. Using a relative file, which searches up the tree for the specified file
