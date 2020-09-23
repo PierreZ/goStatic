@@ -14,6 +14,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"encoding/json"
+	"os"
+	"path/filepath"
 )
 
 var (
@@ -69,6 +72,11 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 
 func handleReq(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("======================")
+		log.Println("path =>", r.URL.Path)
+		log.Println("extension =>", filepath.Ext(r.URL.Path))
+		log.Println("pagedata =>", strings.HasPrefix(r.URL.Path, "/page-data"))
+		log.Println("======================")
 		if *httpsPromote && r.Header.Get("X-Forwarded-Proto") == "http" {
 			http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
 			if *logRequest {
@@ -80,13 +88,57 @@ func handleReq(h http.Handler) http.Handler {
 		if *logRequest {
 			log.Println(r.Method, r.URL.Path)
 		}
+
+		fileExtension := filepath.Ext(r.URL.Path)
+		if fileExtension == ".json" && strings.HasPrefix(r.URL.Path, "/page-data") {
+			log.Println("add header")
+			w.Header().Set("cache-control", "public, max-age=0, must-revalidate")
+		}
+
 		h.ServeHTTP(w, r)
 	})
+}
+
+type HeaderConfigs struct {
+	Configs []HConfig `json:"configs"`
+}
+
+type HConfig struct {
+	Path string `json:"path"`
+	FileExtension string `json:"fileExtension"`
+	Header string `json:"header"`
+}
+
+
+func initHeaderConfig() {
+	// Open our jsonFile
+	jsonFile, err := os.Open("/config/headerConfig.json")
+	// if we os.Open returns an error then handle it
+	if err != nil {
+    fmt.Println(err)
+	}
+	fmt.Println("Successfully Opened headerConfig.json")
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var headerConfigs HeaderConfigs
+
+	json.Unmarshal(byteValue, &headerConfigs)
+
+	for i := 0; i < len(headerConfigs.Configs); i++ {
+    fmt.Println("Path: " + headerConfigs.Configs[i].Path)
+    fmt.Println("FileExtension: " + headerConfigs.Configs[i].FileExtension)
+    fmt.Println("Header: " + headerConfigs.Configs[i].Header)
+	}
+
+	jsonFile.Close()
 }
 
 func main() {
 
 	flag.Parse()
+
+	initHeaderConfig()
 
 	// sanity check
 	if len(*setBasicAuth) != 0 && !*basicAuth {
