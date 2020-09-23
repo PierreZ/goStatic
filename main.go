@@ -70,13 +70,15 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
-func handleReq(h http.Handler) http.Handler {
+func handleReq(h http.Handler, headerConfigs HeaderConfigs) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		/*
 		log.Println("======================")
 		log.Println("path =>", r.URL.Path)
 		log.Println("extension =>", filepath.Ext(r.URL.Path))
 		log.Println("pagedata =>", strings.HasPrefix(r.URL.Path, "/page-data"))
 		log.Println("======================")
+		*/
 		if *httpsPromote && r.Header.Get("X-Forwarded-Proto") == "http" {
 			http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
 			if *logRequest {
@@ -89,10 +91,29 @@ func handleReq(h http.Handler) http.Handler {
 			log.Println(r.Method, r.URL.Path)
 		}
 
-		fileExtension := filepath.Ext(r.URL.Path)
-		if fileExtension == ".json" && strings.HasPrefix(r.URL.Path, "/page-data") {
-			log.Println("add header")
-			w.Header().Set("cache-control", "public, max-age=0, must-revalidate")
+		// apply custom header config
+		if (len(headerConfigs.Configs) > 0) {
+			reqFileExtension := filepath.Ext(r.URL.Path)
+
+			for i := 0; i < len(headerConfigs.Configs); i++ {
+				configEntry := headerConfigs.Configs[i]
+
+				fileMatch := configEntry.FileExtension == "*" || reqFileExtension == "."+ configEntry.FileExtension
+				pathMatch := configEntry.Path == "*" || strings.HasPrefix(r.URL.Path, configEntry.Path)
+
+				// log.Println("fileMatch", reqFileExtension, configEntry.FileExtension)
+				// log.Println("pathMatch", r.URL.Path, configEntry.Path)
+
+				if fileMatch && pathMatch {
+					log.Println(r.URL.Path, configEntry.FileExtension, configEntry.Path)
+					for j := 0; j < len(configEntry.Headers); j++ {
+						headerEntry := configEntry.Headers[j]
+
+						log.Println("add header", headerEntry.Key, headerEntry.Value, "to", r.URL.Path)
+						w.Header().Set(headerEntry.Key, headerEntry.Value)
+					}
+				}
+			}
 		}
 
 		h.ServeHTTP(w, r)
@@ -106,39 +127,54 @@ type HeaderConfigs struct {
 type HConfig struct {
 	Path string `json:"path"`
 	FileExtension string `json:"fileExtension"`
-	Header string `json:"header"`
+	Headers []Header `json:"headers"`
+}
+
+type Header struct {
+	Key string `json:"key"`
+	Value string `json:"value"`
 }
 
 
-func initHeaderConfig() {
-	// Open our jsonFile
-	jsonFile, err := os.Open("/config/headerConfig.json")
-	// if we os.Open returns an error then handle it
-	if err != nil {
-    fmt.Println(err)
+func initHeaderConfig() HeaderConfigs {
+	if fileExists("/config/headerConfig.json") {
+		jsonFile, err := os.Open("/config/headerConfig.json")
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+
+		var headerConfigs HeaderConfigs
+
+		json.Unmarshal(byteValue, &headerConfigs)
+
+		fmt.Println("Found header config file. Rules:")
+
+		for i := 0; i < len(headerConfigs.Configs); i++ {
+			fmt.Println("==============================================================")
+			fmt.Println("Path: " + headerConfigs.Configs[i].Path)
+			fmt.Println("FileExtension: " + headerConfigs.Configs[i].FileExtension)
+			for j := 0; j < len(headerConfigs.Configs); j++ {
+				headerRule := headerConfigs.Configs[i].Headers[j]
+				fmt.Println(headerRule.Key, ":", headerRule.Value)
+			}
+			fmt.Println("==============================================================")
+		}
+
+		jsonFile.Close()
+
+		return headerConfigs
+	} else {
+		return nil
 	}
-	fmt.Println("Successfully Opened headerConfig.json")
-
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-
-	var headerConfigs HeaderConfigs
-
-	json.Unmarshal(byteValue, &headerConfigs)
-
-	for i := 0; i < len(headerConfigs.Configs); i++ {
-    fmt.Println("Path: " + headerConfigs.Configs[i].Path)
-    fmt.Println("FileExtension: " + headerConfigs.Configs[i].FileExtension)
-    fmt.Println("Header: " + headerConfigs.Configs[i].Header)
-	}
-
-	jsonFile.Close()
 }
 
 func main() {
 
 	flag.Parse()
 
-	initHeaderConfig()
+	headerConfigs := initHeaderConfig()
 
 	// sanity check
 	if len(*setBasicAuth) != 0 && !*basicAuth {
@@ -156,7 +192,7 @@ func main() {
 		}
 	}
 
-	handler := handleReq(http.FileServer(fileSystem))
+	handler := handleReq(http.FileServer(fileSystem), headerConfigs)
 
 	pathPrefix := "/"
 	if len(*context) > 0 {
