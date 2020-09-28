@@ -50,11 +50,11 @@ func logHeaderConfig(config HeaderConfig) {
 	fmt.Println("------------------------------")
 }
 
-func initHeaderConfig() bool {
+func initHeaderConfig(headerConfigPath string) bool {
 	headerConfigValid := false
 
-	if fileExists("/config/headerConfig.json") {
-		jsonFile, err := os.Open("/config/headerConfig.json")
+	if fileExists(headerConfigPath) {
+		jsonFile, err := os.Open(headerConfigPath)
 		if err != nil {
 			fmt.Println("Cant't read header config file. Error:")
 			fmt.Println(err)

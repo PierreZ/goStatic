@@ -40,7 +40,7 @@ docker run -d -p 80:8043 -v path/to/website:/srv/http --name goStatic pierrezemb
 
 ```
 ./goStatic --help
-Usage of /goStatic:
+Usage of ./goStatic:
   -append-header HeaderName:Value
         HTTP response header, specified as HeaderName:Value that should be added to all responses.
   -context string
@@ -51,8 +51,14 @@ Usage of /goStatic:
         Enable basic auth. By default, password are randomly generated. Use --set-basic-auth to set it.
   -enable-health
         Enable health check endpoint. You can call /health to get a 200 response. Useful for Kubernetes, OpenFaas, etc.
+  -enable-logging
+        Enable log request
   -fallback string
-        Default fallback file. Either absolute for a specific asset (/index.html), or relative to recursively resolve (index.html).
+        Default fallback file. Either absolute for a specific asset (/index.html), or relative to recursively resolve (index.html)
+  -header-config-path string
+        Path to the config file for custom response headers (default "/config/headerConfig.json")
+  -https-promote
+        All HTTP requests should be redirected to HTTPS
   -password-length int
         Size of the randomized password (default 16)
   -path string
@@ -61,10 +67,6 @@ Usage of /goStatic:
         The listening port (default 8043)
   -set-basic-auth string
         Define the basic auth. Form must be user:password
-  -https-promote
-        Connections to http: are redirected to https:
-  -enable-logging
-        Writes a simple log entry for requests to the server
 ```
 
 #### Fallback
