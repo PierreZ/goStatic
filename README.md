@@ -16,6 +16,7 @@ Yeah, decided to drop support of unsecured HTTPS. Two-years ago, when I started 
  * Light container
  * More secure than official images (see below)
  * Log enabled
+ * Specify custom response headers per path and filetype [(info)](./docs/header-config.md) 
 
 ### Why?
 Because the official Golang image is wayyyy too big (around 1/2Gb as you can see below) and could be insecure.
