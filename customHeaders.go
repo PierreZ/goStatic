@@ -38,6 +38,18 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
+func logHeaderConfig(config HeaderConfig) {
+	fmt.Println("Path: " + config.Path)
+	fmt.Println("FileExtension: " + config.FileExtension)
+
+	for j := 0; j < len(config.Headers); j++ {
+		headerRule := config.Headers[j]
+		fmt.Println(headerRule.Key, ":", headerRule.Value)
+	}
+
+	fmt.Println("------------------------------")
+}
+
 func initHeaderConfig() bool {
 	headerConfigValid := false
 
@@ -54,17 +66,11 @@ func initHeaderConfig() bool {
 			if len(headerConfigs.Configs) > 0 {
 				headerConfigValid = true
 				fmt.Println("Found header config file. Rules:")
+				fmt.Println("------------------------------")
 
 				for i := 0; i < len(headerConfigs.Configs); i++ {
 					configEntry := headerConfigs.Configs[i]
-					fmt.Println("==============================================================")
-					fmt.Println("Path: " + configEntry.Path)
-					fmt.Println("FileExtension: " + configEntry.FileExtension)
-					for j := 0; j < len(configEntry.Headers); j++ {
-						headerRule := configEntry.Headers[j]
-						fmt.Println(headerRule.Key, ":", headerRule.Value)
-					}
-					fmt.Println("==============================================================")
+					logHeaderConfig(configEntry)
 				}
 			} else {
 				fmt.Println("No rules found in header config file.")
