@@ -30,6 +30,7 @@ var (
 	sizeRandom               = flag.Int("password-length", 16, "Size of the randomized password")
 	logRequest               = flag.Bool("enable-logging", false, "Enable log request")
 	httpsPromote             = flag.Bool("https-promote", false, "All HTTP requests should be redirected to HTTPS")
+	headerConfigPath         = flag.String("header-config-path", "/config/headerConfig.json", "Path to the config file for custom response headers")
 
 	username string
 	password string
@@ -80,6 +81,7 @@ func handleReq(h http.Handler) http.Handler {
 		if *logRequest {
 			log.Println(r.Method, r.URL.Path)
 		}
+
 		h.ServeHTTP(w, r)
 	})
 }
@@ -120,6 +122,11 @@ func main() {
 			generateRandomAuth()
 		}
 		handler = authMiddleware(handler)
+	}
+
+	headerConfigValid := initHeaderConfig(*headerConfigPath)
+	if headerConfigValid {
+		handler = customHeadersMiddleware(handler)
 	}
 
 	// Extra headers.
