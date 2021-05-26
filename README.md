@@ -12,7 +12,6 @@ Yeah, decided to drop support of unsecured HTTPS. Two-years ago, when I started 
  * A fully static web server in 6MB
  * No framework
  * Web server built for Docker
- * Can generate the certificate on its own
  * Light container
  * More secure than official images (see below)
  * Log enabled
