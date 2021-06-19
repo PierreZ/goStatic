@@ -1,10 +1,22 @@
 # stage 0
-FROM golang:latest as builder
+FROM --platform=$BUILDPLATFORM golang:latest as builder
+
+ARG TARGETPLATFORM
+
 WORKDIR /go/src/github.com/PierreZ/goStatic
 COPY . .
+
 RUN mkdir ./bin && \
     apt-get update && apt-get install -y upx && \
-    CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags="-s" -tags netgo -installsuffix netgo -o ./bin/goStatic && \
+
+    # getting right vars from docker buildx
+    # especially to handle linux/arm/v6 for example
+    GOOS=$(echo $TARGETPLATFORM | cut -f1 -d/) && \
+    GOARCH=$(echo $TARGETPLATFORM | cut -f2 -d/) && \
+    GOARM=$(echo $TARGETPLATFORM | cut -f3 -d/ | sed "s/v//" ) && \
+
+    CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${BUILD_ARGS} -ldflags="-s" -tags netgo -installsuffix netgo -o ./bin/goStatic && \
+
     mkdir ./bin/etc && \
     ID=$(shuf -i 100-9999 -n 1) && \
     upx -9 ./bin/goStatic && \
