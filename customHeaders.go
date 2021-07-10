@@ -111,9 +111,7 @@ func customHeadersMiddleware(next http.Handler) http.Handler {
 			var matches bool
 
 			if configEntry.UsesRegex() {
-				if configEntry.CompiledRegex.MatchString(r.URL.Path) {
-					matches = true
-				}
+				matches = configEntry.CompiledRegex.MatchString(r.URL.Path)
 			} else {
 				matches =
 					// Check if the file extension matches.
