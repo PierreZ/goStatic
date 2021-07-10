@@ -27,13 +27,13 @@ type HeaderConfig struct {
 }
 
 func (config *HeaderConfig) Init() {
-	if config.UsesRegex() {
+	if len(config.Regex) > 0 {
 		config.CompiledRegex = regexp.MustCompile(config.Regex)
 	}
 }
 
 func (config *HeaderConfig) UsesRegex() bool {
-	return len(config.Regex) > 0
+	return config.CompiledRegex != nil
 }
 
 // HeaderDefiniton is a key value pair of a specified header rule
