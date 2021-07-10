@@ -115,9 +115,11 @@ func customHeadersMiddleware(next http.Handler) http.Handler {
 					matches = true
 				}
 			} else {
-				fileMatch := configEntry.FileExtension == "*" || reqFileExtension == "."+configEntry.FileExtension
-				pathMatch := configEntry.Path == "*" || strings.HasPrefix(r.URL.Path, configEntry.Path)
-				matches = fileMatch && pathMatch
+				matches =
+					// Check if the file extension matches.
+					(configEntry.FileExtension == "*" || reqFileExtension == "."+configEntry.FileExtension) &&
+						// Check if the path matches.
+						(configEntry.Path == "*" || strings.HasPrefix(r.URL.Path, configEntry.Path))
 			}
 
 			if matches {
