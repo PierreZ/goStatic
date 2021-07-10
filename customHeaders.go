@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -17,9 +18,22 @@ type HeaderConfigArray struct {
 
 // HeaderConfig is a single header rule specification
 type HeaderConfig struct {
+	Regex         string            `json:"regex"`
 	Path          string            `json:"path"`
 	FileExtension string            `json:"fileExtension"`
 	Headers       []HeaderDefiniton `json:"headers"`
+
+	CompiledRegex *regexp.Regexp
+}
+
+func (config *HeaderConfig) Init() {
+	if config.UsesRegex() {
+		config.CompiledRegex = regexp.MustCompile(config.Regex)
+	}
+}
+
+func (config *HeaderConfig) UsesRegex() bool {
+	return len(config.Regex) > 0
 }
 
 // HeaderDefiniton is a key value pair of a specified header rule
@@ -28,7 +42,7 @@ type HeaderDefiniton struct {
 	Value string `json:"value"`
 }
 
-var headerConfigs HeaderConfigArray
+var headerConfigs *HeaderConfigArray
 
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
@@ -38,9 +52,13 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func logHeaderConfig(config HeaderConfig) {
-	fmt.Println("Path: " + config.Path)
-	fmt.Println("FileExtension: " + config.FileExtension)
+func logHeaderConfig(config *HeaderConfig) {
+	if config.UsesRegex() {
+		fmt.Println("Regex: " + config.Regex)
+	} else {
+		fmt.Println("Path: " + config.Path)
+		fmt.Println("FileExtension: " + config.FileExtension)
+	}
 
 	for j := 0; j < len(config.Headers); j++ {
 		headerRule := config.Headers[j]
@@ -69,7 +87,8 @@ func initHeaderConfig(headerConfigPath string) bool {
 				fmt.Println("------------------------------")
 
 				for i := 0; i < len(headerConfigs.Configs); i++ {
-					configEntry := headerConfigs.Configs[i]
+					configEntry := &headerConfigs.Configs[i]
+					configEntry.Init()
 					logHeaderConfig(configEntry)
 				}
 			} else {
@@ -89,11 +108,19 @@ func customHeadersMiddleware(next http.Handler) http.Handler {
 
 		for i := 0; i < len(headerConfigs.Configs); i++ {
 			configEntry := headerConfigs.Configs[i]
+			var matches bool
 
-			fileMatch := configEntry.FileExtension == "*" || reqFileExtension == "."+configEntry.FileExtension
-			pathMatch := configEntry.Path == "*" || strings.HasPrefix(r.URL.Path, configEntry.Path)
+			if configEntry.UsesRegex() {
+				if configEntry.CompiledRegex.MatchString(r.URL.Path) {
+					matches = true
+				}
+			} else {
+				fileMatch := configEntry.FileExtension == "*" || reqFileExtension == "."+configEntry.FileExtension
+				pathMatch := configEntry.Path == "*" || strings.HasPrefix(r.URL.Path, configEntry.Path)
+				matches = fileMatch && pathMatch
+			}
 
-			if fileMatch && pathMatch {
+			if matches {
 				for j := 0; j < len(configEntry.Headers); j++ {
 					headerEntry := configEntry.Headers[j]
 					w.Header().Set(headerEntry.Key, headerEntry.Value)
