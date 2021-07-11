@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -17,9 +18,32 @@ type HeaderConfigArray struct {
 
 // HeaderConfig is a single header rule specification
 type HeaderConfig struct {
+	Regex         string            `json:"regex"`
 	Path          string            `json:"path"`
 	FileExtension string            `json:"fileExtension"`
 	Headers       []HeaderDefiniton `json:"headers"`
+
+	CompiledRegex *regexp.Regexp
+}
+
+func (config *HeaderConfig) Init() (ok bool) {
+	if len(config.Regex) > 0 {
+		regex, err := regexp.Compile(config.Regex)
+
+		if err != nil {
+			fmt.Println("WARNING: Ignoring rule with regex error:", err)
+			fmt.Println("")
+			return
+		}
+		config.CompiledRegex = regex
+	}
+
+	ok = true
+	return
+}
+
+func (config *HeaderConfig) UsesRegex() bool {
+	return config.CompiledRegex != nil
 }
 
 // HeaderDefiniton is a key value pair of a specified header rule
@@ -39,8 +63,12 @@ func fileExists(filename string) bool {
 }
 
 func logHeaderConfig(config HeaderConfig) {
-	fmt.Println("Path: " + config.Path)
-	fmt.Println("FileExtension: " + config.FileExtension)
+	if config.UsesRegex() {
+		fmt.Println("Regex: " + config.Regex)
+	} else {
+		fmt.Println("Path: " + config.Path)
+		fmt.Println("FileExtension: " + config.FileExtension)
+	}
 
 	for j := 0; j < len(config.Headers); j++ {
 		headerRule := config.Headers[j]
@@ -56,7 +84,7 @@ func initHeaderConfig(headerConfigPath string) bool {
 	if fileExists(headerConfigPath) {
 		jsonFile, err := os.Open(headerConfigPath)
 		if err != nil {
-			fmt.Println("Cant't read header config file. Error:")
+			fmt.Println("Can't read header config file. Error:")
 			fmt.Println(err)
 		} else {
 			byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -65,11 +93,22 @@ func initHeaderConfig(headerConfigPath string) bool {
 
 			if len(headerConfigs.Configs) > 0 {
 				headerConfigValid = true
+
+				// Only keep valid config entries.
+				keepers := make([]HeaderConfig, 0)
+				for _, configEntry := range headerConfigs.Configs {
+					ok := configEntry.Init()
+					if ok {
+						keepers = append(keepers, configEntry)
+					}
+				}
+
+				headerConfigs.Configs = keepers
+
+				// Print the config entries that are kept.
 				fmt.Println("Found header config file. Rules:")
 				fmt.Println("------------------------------")
-
-				for i := 0; i < len(headerConfigs.Configs); i++ {
-					configEntry := headerConfigs.Configs[i]
+				for _, configEntry := range headerConfigs.Configs {
 					logHeaderConfig(configEntry)
 				}
 			} else {
@@ -89,11 +128,19 @@ func customHeadersMiddleware(next http.Handler) http.Handler {
 
 		for i := 0; i < len(headerConfigs.Configs); i++ {
 			configEntry := headerConfigs.Configs[i]
+			var matches bool
 
-			fileMatch := configEntry.FileExtension == "*" || reqFileExtension == "."+configEntry.FileExtension
-			pathMatch := configEntry.Path == "*" || strings.HasPrefix(r.URL.Path, configEntry.Path)
+			if configEntry.UsesRegex() {
+				matches = configEntry.CompiledRegex.MatchString(r.URL.Path)
+			} else {
+				matches =
+					// Check if the file extension matches.
+					(configEntry.FileExtension == "*" || reqFileExtension == "."+configEntry.FileExtension) &&
+						// Check if the path matches.
+						(configEntry.Path == "*" || strings.HasPrefix(r.URL.Path, configEntry.Path))
+			}
 
-			if fileMatch && pathMatch {
+			if matches {
 				for j := 0; j < len(configEntry.Headers); j++ {
 					headerEntry := configEntry.Headers[j]
 					w.Header().Set(headerEntry.Key, headerEntry.Value)
