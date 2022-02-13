@@ -32,6 +32,7 @@ var (
 	defaultUsernameBasicAuth = flag.String("default-user-basic-auth", "gopher", "Define the user")
 	sizeRandom               = flag.Int("password-length", 16, "Size of the randomized password")
 	logLevel                 = flag.String("log-level", "info", "default: info - What level of logging to run, debug logs all requests (error, warn, info, debug)")
+	logRequest               = flag.Bool("enable-logging", false, "Enable log request. NOTE: Deprecated, set log-level to debug to log all requests")
 	httpsPromote             = flag.Bool("https-promote", false, "All HTTP requests should be redirected to HTTPS")
 	headerConfigPath         = flag.String("header-config-path", "/config/headerConfig.json", "Path to the config file for custom response headers")
 
@@ -52,12 +53,6 @@ func setupLogger(logLevel string) {
 	default:
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
-	// UNIX Time is faster and smaller than most timestamps
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-
-	// Set a pretty console output
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-
 }
 
 func parseHeaderFlag(headerFlag string) (string, string) {
@@ -107,6 +102,29 @@ func handleReq(h http.Handler) http.Handler {
 func main() {
 
 	flag.Parse()
+
+	// Setting up logging output before setting up level to print out deprecation warnings
+	// UNIX Time is faster and smaller than most timestamps
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+
+	// Set a pretty console output
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
+	if *logRequest {
+		log.Warn().Msg("enable-logging is deprecated in favor of log-level")
+	}
+
+	//if log-level not default and enable-logging set to true, use log-level
+	if *logLevel != "info" && *logRequest {
+		log.Warn().Msg("log-level not 'info' and enable-logging set, using log-level")
+		*logRequest = false
+	}
+
+	//if log-level is info and we have enable-logging, set log-level to debug
+	if *logLevel == "info" && *logRequest {
+		log.Warn().Msg("since enable-logging is set, setting log-level to debug")
+		*logLevel = "debug"
+	}
 
 	//setting up the logger
 	setupLogger(*logLevel)
