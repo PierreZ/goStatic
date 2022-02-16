@@ -50,7 +50,9 @@ Usage of ./goStatic:
         Enable basic auth. By default, password are randomly generated. Use --set-basic-auth to set it.
   -enable-health
         Enable health check endpoint. You can call /health to get a 200 response. Useful for Kubernetes, OpenFaas, etc.
-  -enable-logging
+  -log-level
+        default: info - What level of logging to run, debug logs all requests (error, warn, info, debug)
+  -enable-logging (Deprecated in favor of `-log-level debug` to log the requests)
         Enable log request
   -fallback string
         Default fallback file. Either absolute for a specific asset (/index.html), or relative to recursively resolve (index.html)
@@ -77,7 +79,34 @@ The fallback option is principally useful for single-page applications (SPAs) wh
 
 The second case is useful if you have multiple SPAs within the one filesystem. e.g., */* and */admin*.
 
+## Docker Usage
 
+To modify the docker image to use cmd line args, use the `entrypoint` directive in docker to supply the required arguments.
+
+You can also use environment variables to set the command arguments.  Note that if you supply both `entrypoint` cmd line args and environment variables, the cmd-line args will override your environment variables.
+
+**Important:** The environment variables are the exact same as the cmd line args, except they are uppercase, and the "-" is replaced with a "_".
+
+### Docker Compose Example
+
+```yaml
+---
+version: '3.7'
+
+services:
+  website:
+    image: pierrezemb/gostatic
+    hostname: website
+    container_name: website
+    volumes:
+      - /local-files/website/site/public:/srv/http
+    ports:
+      - 8043:8043
+    environment:
+      - LOG_LEVEL=debug
+    entrypoint: "/goStatic -fallback /404.html"
+
+```
 ## Build
 
 ### Docker images
