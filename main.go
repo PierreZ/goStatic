@@ -208,7 +208,7 @@ func main() {
 
 	http.Handle(pathPrefix, handler)
 
-	log.Info().Msgf("Listening at 0.0.0.0%v %v...", port, pathPrefix)
+	log.Info().Msgf("Listening at http://0.0.0.0%v %v...", port, pathPrefix)
 	if err := http.ListenAndServe(port, nil); err != nil && err != http.ErrServerClosed {
 		log.Fatal().Err(err).Msg("Server startup failed")
 	}
