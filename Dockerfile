@@ -18,16 +18,16 @@ RUN mkdir ./bin && \
     CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${BUILD_ARGS} -ldflags="-s" -tags netgo -installsuffix netgo -o ./bin/goStatic && \
 
     mkdir ./bin/etc && \
-    ID=$(shuf -i 100-9999 -n 1) && \
+    ID=65534 && \
     upx -9 ./bin/goStatic && \
     echo $ID && \
-    echo "appuser:x:$ID:$ID::/sbin/nologin:/bin/false" > ./bin/etc/passwd && \
-    echo "appgroup:x:$ID:appuser" > ./bin/etc/group
+    echo "gostatic:x:$ID:$ID::/sbin/nologin:/bin/false" > ./bin/etc/passwd && \
+    echo "gostatic:x:$ID:gostatic" > ./bin/etc/group
 
 # stage 1
 FROM scratch
 WORKDIR /
 COPY --from=builder /go/src/github.com/PierreZ/goStatic/bin/ .
-USER appuser
+USER gostatic
 ENTRYPOINT ["/goStatic"]
  
