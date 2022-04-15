@@ -5,7 +5,6 @@ package main
 
 import (
 	"compress/gzip"
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,6 +14,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/namsral/flag"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
