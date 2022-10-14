@@ -77,6 +77,14 @@ The fallback option is principally useful for single-page applications (SPAs) wh
 
 The second case is useful if you have multiple SPAs within the one filesystem. e.g., */* and */admin*.
 
+Example with a absolute path for a SPA setup :
+
+```dockerfile
+FROM pierrezemb/gostatic:latest
+COPY ./your/dist/folder /srv/http
+EXPOSE 8043
+CMD [ "-fallback", "index.html" ]
+```
 
 ## Build
 
