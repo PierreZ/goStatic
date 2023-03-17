@@ -35,6 +35,8 @@ var (
 	logRequest               = flag.Bool("enable-logging", false, "Enable log request. NOTE: Deprecated, set log-level to debug to log all requests")
 	httpsPromote             = flag.Bool("https-promote", false, "All HTTP requests should be redirected to HTTPS")
 	headerConfigPath         = flag.String("header-config-path", "/config/headerConfig.json", "Path to the config file for custom response headers")
+	basicAuthUser            = flag.String("basic-auth-user", "", "Username for basic auth")
+	basicAuthPass            = flag.String("basic-auth-pass", "", "Password for basic auth")
 
 	username string
 	password string
@@ -159,7 +161,9 @@ func main() {
 
 	if *basicAuth {
 		log.Debug().Msg("Enabling Basic Auth")
-		if len(*setBasicAuth) != 0 {
+		if len(*basicAuthUser) != 0 && len(*basicAuthPass) != 0 {
+			parseAuth(*basicAuthUser + ":" + *basicAuthPass)
+		} else if len(*setBasicAuth) != 0 {
 			parseAuth(*setBasicAuth)
 		} else {
 			generateRandomAuth()
