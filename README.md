@@ -1,7 +1,9 @@
 # goStatic [![Docker Pulls](https://img.shields.io/docker/pulls/pierrezemb/gostatic.svg?style=plastic)](https://hub.docker.com/r/pierrezemb/gostatic/) [![Docker Build](https://img.shields.io/docker/build/pierrezemb/gostatic.svg?style=plastic)](https://hub.docker.com/r/pierrezemb/gostatic/) [![Build Status](https://travis-ci.org/PierreZ/goStatic.svg?branch=master)](https://travis-ci.org/PierreZ/goStatic)  [![GoDoc](https://godoc.org/github.com/PierreZ/goStatic?status.svg)](https://godoc.org/github.com/PierreZ/goStatic)
+
 A really small, multi-arch, static web server for Docker
 
 ## The goal
+
 My goal is to create to smallest docker container for my web static files. The advantage of Go is that you can generate a fully static binary, so that you don't need anything else.
 
 ### Wait, I've been using old versions of GoStatic and things have changed!
@@ -9,15 +11,17 @@ My goal is to create to smallest docker container for my web static files. The a
 Yeah, decided to drop support of unsecured HTTPS. Two-years ago, when I started GoStatic, there was no automatic HTTPS available. Nowadays, thanks to Let's Encrypt, it's really easy to do so. If you need HTTPS, I recommend [caddy](https://caddyserver.com).
 
 ## Features
- * A fully static web server embedded in a `SCRATCH` image
- * No framework
- * Web server built for Docker
- * Light container
- * More secure than official images (see below)
- * Log enabled
- * Specify custom response headers per path and filetype [(info)](./docs/header-config.md) 
+
+* A fully static web server embedded in a `SCRATCH` image
+* No framework
+* Web server built for Docker
+* Light container
+* More secure than official images (see below)
+* Log enabled
+* Specify custom response headers per path and filetype [(info)](./docs/header-config.md)
 
 ## Why?
+
 Because the official Golang image is wayyyy too big (around 1/2Gb as you can see below) and could be insecure.
 
 [![](https://badge.imagelayers.io/golang:latest.svg)](https://imagelayers.io/?images=golang:latest 'Get your own badge on imagelayers.io')
@@ -25,19 +29,20 @@ Because the official Golang image is wayyyy too big (around 1/2Gb as you can see
 For me, the whole point of containers is to have a light container...
 Many links should provide you with additional info to see my point of view:
 
- * [Over 30% of Official Images in Docker Hub Contain High Priority Security Vulnerabilities](http://www.banyanops.com/blog/analyzing-docker-hub/)
- * [Create The Smallest Possible Docker Container](http://blog.xebia.com/2014/07/04/create-the-smallest-possible-docker-container/)
- * [Building Docker Images for Static Go Binaries](https://medium.com/@kelseyhightower/optimizing-docker-images-for-static-binaries-b5696e26eb07)
- * [Small Docker Images For Go Apps](https://www.ctl.io/developers/blog/post/small-docker-images-for-go-apps)
+* [Over 30% of Official Images in Docker Hub Contain High Priority Security Vulnerabilities](http://www.banyanops.com/blog/analyzing-docker-hub/)
+* [Create The Smallest Possible Docker Container](http://blog.xebia.com/2014/07/04/create-the-smallest-possible-docker-container/)
+* [Building Docker Images for Static Go Binaries](https://medium.com/@kelseyhightower/optimizing-docker-images-for-static-binaries-b5696e26eb07)
+* [Small Docker Images For Go Apps](https://www.ctl.io/developers/blog/post/small-docker-images-for-go-apps)
 
 ## How to use
-```
+
+```bash
 docker run -d -p 80:8043 -v path/to/website:/srv/http --name goStatic pierrezemb/gostatic
 ```
 
-## Usage 
+## Usage
 
-```
+```bash
 ./goStatic --help
 Usage of ./goStatic:
   -append-header HeaderName:Value
@@ -65,7 +70,11 @@ Usage of ./goStatic:
   -port int
         The listening port (default 8043)
   -set-basic-auth string
-        Define the basic auth. Form must be user:password
+        Define the basic auth user string. Form must be user:password
+  -basic-auth-user
+        Define the basic auth username
+  -basic-auth-pass
+        Define the basic auth password
 ```
 
 ### Fallback
@@ -77,10 +86,10 @@ The fallback option is principally useful for single-page applications (SPAs) wh
 
 The second case is useful if you have multiple SPAs within the one filesystem. e.g., */* and */admin*.
 
-
 ## Build
 
 ### Docker images
+
 ```bash
 docker buildx create --use --name=cross
 docker buildx build --platform=linux/amd64,linux/arm64,linux/arm/v5,linux/arm/v6,linux/arm/v7,darwin/amd64,darwin/arm64,windows/amd64 .
