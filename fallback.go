@@ -14,8 +14,8 @@ type fallback struct {
 
 func OpenDefault(fb fallback, requestPath string) (http.File, error) {
 	requestPath = path.Dir(requestPath)
-	defaultFile := requestPath + "/" + fb.defaultPath;
-	
+	defaultFile := requestPath + "/" + fb.defaultPath
+
 	f, err := fb.fs.Open(defaultFile)
 	if os.IsNotExist(err) && requestPath != "" {
 		parentPath, _ := path.Split(requestPath)
