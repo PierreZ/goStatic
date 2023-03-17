@@ -35,7 +35,7 @@ func authMiddleware(next http.Handler) http.Handler {
 }
 
 func parseAuth(auth string) {
-	identity := strings.Split(*setBasicAuth, ":")
+	identity := strings.Split(auth, ":")
 	if len(identity) != 2 {
 		log.Fatalln("basic auth must be like this: user:password")
 	}
