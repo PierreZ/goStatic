@@ -35,6 +35,7 @@ var (
 	logRequest               = flag.Bool("enable-logging", false, "Enable log request. NOTE: Deprecated, set log-level to debug to log all requests")
 	httpsPromote             = flag.Bool("https-promote", false, "All HTTP requests should be redirected to HTTPS")
 	headerConfigPath         = flag.String("header-config-path", "/config/headerConfig.json", "Path to the config file for custom response headers")
+	enableDirectoryListings  = flag.Bool("enable-directory-listings", true, "When requesting a directory, should we return a list of the directory contents?")
 
 	username string
 	password string
@@ -99,6 +100,19 @@ func handleReq(h http.Handler) http.Handler {
 	})
 }
 
+// Source: https://www.alexedwards.net/blog/disable-http-fileserver-directory-listings
+// Serves up a 404 page instead of listing the contents of the directory
+func preventDirectoryListings(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        if strings.HasSuffix(r.URL.Path, "/") {
+            http.NotFound(w, r)
+            return
+        }
+
+        next.ServeHTTP(w, r)
+    })
+}
+
 func main() {
 
 	flag.Parse()
@@ -149,8 +163,13 @@ func main() {
 		}
 	}
 
-	handler := handleReq(http.FileServer(fileSystem))
-
+	var handler http.Handler
+	if *enableDirectoryListings {
+		handler = handleReq(http.FileServer(fileSystem))
+	} else {
+		handler = handleReq(preventDirectoryListings(http.FileServer(fileSystem)))
+	}
+	
 	pathPrefix := "/"
 	if len(*context) > 0 {
 		pathPrefix = "/" + *context + "/"
